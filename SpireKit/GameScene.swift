@@ -14,8 +14,12 @@ class GameScene: SKScene {
     var paddle = SKSpriteNode()
     private var label : SKLabelNode?
     private var spinnyNode : SKShapeNode?
+    var loseZone = SKSpriteNode()
+
+     
     
     override func didMove(to view: SKView) {
+        makeLoseZone() 
         createBackground()
         
         resetGame()
@@ -26,7 +30,24 @@ class GameScene: SKScene {
         makePaddle()
            makeBall()
         makeBrick()
+        
        }
+    
+    func makeLoseZone() {
+
+            loseZone = SKSpriteNode(color: .red, size: CGSize(width: frame.width, height: 50))
+
+            loseZone.position = CGPoint(x: frame.midX, y: frame.minY + 25)
+
+            loseZone.name = "loseZone"
+
+            loseZone.physicsBody = SKPhysicsBody(rectangleOf: loseZone.size)
+
+            loseZone.physicsBody?.isDynamic = false
+
+            addChild(loseZone)
+
+        }
     
     func makeBall() {
         ball.removeFromParent()     // remove the ball (if it exists)
