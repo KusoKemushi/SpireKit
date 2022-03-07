@@ -10,7 +10,7 @@ import GameplayKit
 
 class GameScene: SKScene, SKPhysicsContactDelegate {
     var ball = SKShapeNode()
-    var brick = SKSpriteNode()
+    var bricks = [SKSpriteNode]()
     var paddle = SKSpriteNode()
     private var label : SKLabelNode?
     private var spinnyNode : SKShapeNode?
@@ -21,6 +21,7 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
     var playingGame = false
     var score = 0
     var lives = 3
+    var removedBricks = 0
      
     
     override func didMove(to view: SKView) {
@@ -32,12 +33,36 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
         createBackground()
         resetGame()
     }
+    
+    func gameOver(winner: Bool) {
+
+           playingGame = false
+
+           playLabel.alpha = 1
+
+           resetGame()
+
+           if winner {
+
+               playLabel.text = "You win! Tap to play again"
+
+           }
+
+           else {
+
+               playLabel.text = "You lose! Tap to play again"
+
+           }
+
+       }
+    
+    
     func resetGame() {
 
            // this stuff happens before each game starts
         makePaddle()
            makeBall()
-        makeBrick()
+        makeBricks()
         
        }
     
@@ -83,15 +108,29 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     func didBegin(_ contact: SKPhysicsContact) {
 
-            if contact.bodyA.node?.name == "brick" ||
+            // ask each brick, "Is it you?"
 
-               contact.bodyB.node?.name == "brick" {
+            for brick in bricks {
 
-                print("You win!")
+                if contact.bodyA.node == brick ||
 
-                brick.removeFromParent()
+                   contact.bodyB.node == brick {
 
-                ball.removeFromParent()
+                    score += 1
+
+                    updateLabels()
+
+                    brick.removeFromParent()
+
+                    removedBricks += 1
+
+                    if removedBricks == bricks.count {
+
+                        gameOver(winner: true)
+
+                    }
+
+                }
 
             }
 
@@ -99,14 +138,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
                contact.bodyB.node?.name == "loseZone" {
 
-                print("You lose!")
+                lives -= 1
 
-                ball.removeFromParent()
+                if lives > 0 {
+
+                    score = 0
+
+                    resetGame()
+
+                    kickBall()
+
+                }
+
+                else {
+
+                    gameOver(winner: false)
+
+                }
 
             }
 
         }
-
 
     
 
@@ -236,22 +288,62 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
     }
     
-    func makeBrick() {
+    // helper function used to make each brick
 
-            brick.removeFromParent()    // remove the brick, if it exists
-            brick = SKSpriteNode(color: .blue, size: CGSize(width: 50, height: 20))
+       func makeBrick(x: Int, y: Int, color: UIColor) {
 
-            brick.position = CGPoint(x: frame.midX, y: frame.maxY - 50)
+           let brick = SKSpriteNode(color: color, size: CGSize(width: 50, height: 20))
 
-            brick.name = "brick"
+           brick.position = CGPoint(x: x, y: y)
 
-            brick.physicsBody = SKPhysicsBody(rectangleOf: brick.size)
+           brick.physicsBody = SKPhysicsBody(rectangleOf: brick.size)
 
-            brick.physicsBody?.isDynamic = false
+           brick.physicsBody?.isDynamic = false
 
-            addChild(brick)
+           addChild(brick)
+
+           bricks.append(brick)
+
+       }
+    
+    func makeBricks() {
+
+            // first, remove any leftover bricks (from prior game)
+
+            for brick in bricks {
+
+                if brick.parent != nil {
+
+                    brick.removeFromParent()
+
+                }
+
+            }
+
+            bricks.removeAll()  // clear the array
+
+            removedBricks = 0   // reset the counter
+
+            
+
+            // now, figure the number and spacing of each row of bricks
+
+            let count = Int(frame.width) / 55   // bricks per row
+
+            let xOffset = (Int(frame.width) - (count * 55)) / 2 + Int(frame.minX) + 25
+
+            let y = Int(frame.maxY) - 15
+
+            for i in 0..<count {
+
+                let x = i * 55 + xOffset
+
+                makeBrick(x: x , y: y, color: .green)
+
+            }
 
         }
+
 
     func createBackground() {
 
