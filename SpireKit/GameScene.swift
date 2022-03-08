@@ -160,6 +160,9 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
         }
 
+
+
+
     
 
     override func touchesMoved(_ touches: Set<UITouch>, with event: UIEvent?) {
@@ -328,21 +331,27 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
 
             // now, figure the number and spacing of each row of bricks
 
-            let count = Int(frame.width) / 55   // bricks per row
+        // now, figure the number and spacing of each row of bricks
 
-            let xOffset = (Int(frame.width) - (count * 55)) / 2 + Int(frame.minX) + 25
+               let count = Int(frame.width) / 55   // bricks per row
 
-            let y = Int(frame.maxY) - 15
+               let xOffset = (Int(frame.width) - (count * 55)) / 2 + Int(frame.minX) + 25
 
-            for i in 0..<count {
+               let colors: [UIColor] = [.blue, .orange, .green]
 
-                let x = i * 55 + xOffset
+               for r in 0..<3 {
 
-                makeBrick(x: x , y: y, color: .green)
+                   let y = Int(frame.maxY) - 15 - (r * 25)
 
-            }
+                   for i in 0..<count {
 
-        }
+                       let x = i * 55 + xOffset
+
+                       makeBrick(x: x , y: y, color: colors[r])
+
+                   }
+
+               
 
 
     func createBackground() {
@@ -372,7 +381,25 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
            }
 
        }
-    
+     override func update(_ currentTime: TimeInterval) {
+        
+        if abs(ball.physicsBody!.velocity.dx) < 100 {
+
+            // ball has stalled in x direction, so kick it randomly horizontally
+
+            ball.physicsBody?.applyImpulse(CGVector(dx: Int.random(in: -3...3), dy: 0))
+
+        }
+
+        if abs(ball.physicsBody!.velocity.dy) < 100 {
+
+            // ball has stalled in y direct, so kick it randomly vertically
+
+            ball.physicsBody?.applyImpulse(CGVector(dx: 0, dy: Int.random(in: -3...3)))
+
+        }
+
+    }
     func makePaddle() {
 
            paddle.removeFromParent()   // remove the paddle, if it exists
@@ -389,4 +416,6 @@ class GameScene: SKScene, SKPhysicsContactDelegate {
            addChild(paddle)
 
        }
+}
+    }
 }
